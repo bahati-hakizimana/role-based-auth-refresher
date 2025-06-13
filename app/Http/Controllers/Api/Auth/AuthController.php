@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Requests\RegistrationRequest;
+use App\Http\Requests\LoginRequest;
 
 class AuthController extends Controller
 {
@@ -17,8 +18,11 @@ class AuthController extends Controller
 
 
        $user = User::create($request->validated());
-    $credentials = $request->only('email', 'password');
-    $token = JWTAuth::attempt($credentials);
+    $token = JWTAuth::attempt([
+
+        "email" => $request->email,
+        "password" => $request->password
+    ]);
 
     if ($user && $token) {
         return $this->responseWithToken($token, $user);
@@ -34,40 +38,27 @@ class AuthController extends Controller
     public function responseWithToken($token, $user){
         return response()->json([
             "status" => "Success",
-            "message" => "User created successfully",
+            // "message" => "User created successfully",
             "accessToken" => $token,
             "user" => $user,
             "type" => "bearer"
         ]);
     }
 
-     public function login(Request $request){
-        $request->validate([
-            "email" => "required|email",
-            "password" => "required"
-        ]);
-
-        $token = JWTAuth::attempt([
-            "email" => $request->email,
-            "password" => $request->password
-        ]);
-
+    public function login(LoginRequest $request){
+        $token = JWTAuth::attempt($request->validated());
         if(!empty($token)){
+            return $this->responseWithToken($token, auth()->user());
+        }else{
             return response()->json([
-                "status" => true,
-                "messagege" => "User loged in successfully",
-                "token" => $token,
-                "user" => $user
+                "status" => "failed",
+                "message" => "Invalid credentials"
             ]);
         }
+    }
 
-        return response()->json([
-            "status" => false,
-            "message" => "Invalid user credentials"
-        ]);
-     }
-
-    public function profile(){}
+    public function profile(){
+    }
 
     public function logout(){}
      
