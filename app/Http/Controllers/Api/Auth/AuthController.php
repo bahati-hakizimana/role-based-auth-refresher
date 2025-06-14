@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Requests\RegistrationRequest;
 use App\Http\Requests\LoginRequest;
+use App\Customs\Services\EmailVerificationService;
 
 class AuthController extends Controller
 {
-    //
+
+    public function __construct(private EmailVerificationService $service){}
 
     public function register(RegistrationRequest $request){
 
@@ -25,6 +27,7 @@ class AuthController extends Controller
     ]);
 
     if ($user && $token) {
+        $this->service->sendVerificationLink($user);
         return $this->responseWithToken($token, $user);
     } else {
         return response()->json([
@@ -38,7 +41,6 @@ class AuthController extends Controller
     public function responseWithToken($token, $user){
         return response()->json([
             "status" => "Success",
-            // "message" => "User created successfully",
             "accessToken" => $token,
             "user" => $user,
             "type" => "bearer"

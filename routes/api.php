@@ -24,6 +24,7 @@ Route::group(["middleware" => ["auth:api"]], function () {
     Route::get("profile", [AuthController::class, 'profile']);
     Route::get("logout", [AuthController::class, 'logout']);
     Route::get("refresh", [AuthController::class,'refreshToken']);
+    Route::get('/verify-email', [AuthController::class, 'verify']);
 });
 
 Route::post("register", [AuthController::class, 'register']);

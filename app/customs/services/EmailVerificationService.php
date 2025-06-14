@@ -1,35 +1,41 @@
 <?php
 
 namespace App\Customs\Services;
+
 use App\Models\EmailVerificationTokem;
-use Illuminate\Support\Facades\Str;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\EmailVerificationNotification;
 
-class EmailVerificationService{
+class EmailVerificationService
+{
+    public function verifyToken(string $email, string $token):void{
 
-    public function sendVerificationLink(object $user):void{
 
-        Notification::send($user, new EmailVerificationNotification($this->generateVerificationLink($user->email)));
 
     }
-    public function generateVerificationLink(string $emai): string
+    public function sendVerificationLink(object $user): void
     {
+        $verificationLink = $this->generateVerificationLink($user->email);
+        Notification::send($user, new EmailVerificationNotification($verificationLink));
+    }
 
-        $checkIfTokEnexist = EmailVerificationTokem::where('email', $emai)->first();
+    public function generateVerificationLink(string $email): string
+    {
+        $existingToken = EmailVerificationTokem::where('email', $email)->first();
 
-        if($checkIfTokEnexist)$checkIfTokEnexist->delete();
-        $token = Str::uuid();
-        $url = config('app.url'). "?token=".$token . "&email=" . $email;
-        $saveToke = EmailVerificationTokem::create([
-            "email" => $email,
-            "token" => $token,
-            "expired_date" => now()->addMinutes(60)
-        ]);
-
-        if($saveToke){
-            return $url;
+        if ($existingToken) {
+            $existingToken->delete();
         }
 
+        $token = Str::uuid();
+        $url = config('app.url'). "?token=".$token . "&email=" . $email;
+        $saved = EmailVerificationTokem::create([
+            'email' => $email,
+            'token' => $token,
+            'expired_at' => now()->addMinutes(60),
+        ]);
+
+        return $url;
     }
 }
