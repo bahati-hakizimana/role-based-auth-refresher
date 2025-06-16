@@ -6,14 +6,82 @@ use App\Models\EmailVerificationTokem;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\EmailVerificationNotification;
+use App\Models\User;
 
 class EmailVerificationService
 {
-    public function verifyToken(string $email, string $token):void{
 
+    public function checkIfEmailIsVerified($user){
 
+        if($user->email_verified_at){
+            return response()->json([
+                "status" => "failed",
+                "message" => "Email has already been vified"
+            ])->send();
+
+            exit;
+        }
 
     }
+
+    public function verifyEmail(string $email, string $token)
+{
+    $user = User::where('email', $email)->first();
+
+    if (!$user) {
+        return response()->json([
+            "status" => "failed",
+            "message" => "User not found!"
+        ]);
+    }
+
+    // Check if already verified
+    if ($user->hasVerifiedEmail()) {
+        return response()->json([
+            "status" => "failed",
+            "message" => "Email has already been verified"
+        ]);
+    }
+
+    $verifiedToken = $this->verifyToken($email, $token);
+
+    if (!$verifiedToken) {
+        return response()->json([
+            "status" => "failed",
+            "message" => "Invalid or expired token"
+        ]);
+    }
+
+    if ($user->markEmailAsVerified()) {
+        $verifiedToken->delete();
+        return response()->json([
+            "status" => "success",
+            "message" => "Email has been verified successfully"
+        ]);
+    } else {
+        return response()->json([
+            "status" => "failed",
+            "message" => "Email verification failed, please try again later"
+        ]);
+    }
+}
+
+   public function verifyToken(string $email, string $token)
+{
+    $tokenRecord = EmailVerificationTokem::where('email', $email)->where('token', $token)->first();
+
+    if ($tokenRecord) {
+        if ($tokenRecord->expired_at >= now()) {
+            return $tokenRecord;
+        } else {
+             $tokenRecord->delete(); // delete expired token
+            return null;
+        }
+    } 
+
+    return null;
+}
+
     public function sendVerificationLink(object $user): void
     {
         $verificationLink = $this->generateVerificationLink($user->email);

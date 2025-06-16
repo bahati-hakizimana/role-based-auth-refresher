@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Requests\RegistrationRequest;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\VerifyEmailRequest;
 use App\Customs\Services\EmailVerificationService;
+
 
 class AuthController extends Controller
 {
@@ -20,7 +22,7 @@ class AuthController extends Controller
 
 
        $user = User::create($request->validated());
-    $token = JWTAuth::attempt([
+       $token = JWTAuth::attempt([
 
         "email" => $request->email,
         "password" => $request->password
@@ -57,6 +59,12 @@ class AuthController extends Controller
                 "message" => "Invalid credentials"
             ]);
         }
+    }
+
+    public function verifyUserEmail(VerifyEmailRequest $request){
+
+        return $this->service->verifyEmail($request->email, $request->token);
+
     }
 
     public function profile(){
