@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Requests\RegistrationRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\VerifyEmailRequest;
@@ -73,9 +74,47 @@ class AuthController extends Controller
     }
 
     public function profile(){
+
+        $userData = auth()->user();
+        return response()->json([
+            "status" => "success",
+            "userData" => $userData
+        ]);
     }
 
-    public function logout(){}
+    public function logout(Request $request){
+
+        try{
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return response()->json([
+                "status"=> "success",
+                "message" =>"user logged out successfully"
+            ]);
+        }catch(JWTException $e){
+
+            return response()->json([
+                "status" => "Failed",
+                "message" => "Failed to logout user"
+            ]);
+
+
+
+        }
+
+        
+
+        // Auth::logout();
+        // return response()->json([
+        //     "status" => "success",
+        //     "message" => "User logged out successfully"
+        // ]);
+
+        // auth()->logout();
+        // return response()->json([
+        //     "status" => "success",
+        //     "message" => "User logged out successfully"
+        // ]);
+    }
      
     public function refreshToken(){}
 }
