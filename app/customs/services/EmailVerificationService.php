@@ -34,8 +34,6 @@ class EmailVerificationService
             "message" => "User not found!"
         ]);
     }
-
-    // Check if already verified
     if ($user->hasVerifiedEmail()) {
         return response()->json([
             "status" => "failed",
@@ -66,6 +64,8 @@ class EmailVerificationService
     }
 }
 
+
+// Verify token
    public function verifyToken(string $email, string $token)
 {
     $tokenRecord = EmailVerificationTokem::where('email', $email)->where('token', $token)->first();
@@ -74,19 +74,39 @@ class EmailVerificationService
         if ($tokenRecord->expired_at >= now()) {
             return $tokenRecord;
         } else {
-             $tokenRecord->delete(); // delete expired token
+             $tokenRecord->delete();
             return null;
         }
     } 
 
     return null;
 }
+    // send velificalin link
 
     public function sendVerificationLink(object $user): void
     {
         $verificationLink = $this->generateVerificationLink($user->email);
         Notification::send($user, new EmailVerificationNotification($verificationLink));
     }
+
+    // resend the link once the first expired
+
+    public function resendLink($email){
+        $user = User::where('email', $email)->first();
+        if($user){
+            $this->sendVerificationLink($user);
+            return response()->json([
+                "status" => "Success",
+                "message" => "verification Link sent successfully"
+            ]);
+        }else{
+            return response()->json([
+                "status" => "failed",
+                "message" => "User not found !"
+            ]);
+        }
+    }
+
 
     public function generateVerificationLink(string $email): string
     {

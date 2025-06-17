@@ -10,6 +10,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Requests\RegistrationRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\VerifyEmailRequest;
+use App\Http\Requests\ResendEmailVerificationRequest;
 use App\Customs\Services\EmailVerificationService;
 
 
@@ -65,6 +66,10 @@ class AuthController extends Controller
 
         return $this->service->verifyEmail($request->email, $request->token);
 
+    }
+
+    public function resendEmailVerificationLink(ResendEmailVerificationRequest $request){
+        return $this->service->resendLink($request->email);
     }
 
     public function profile(){
