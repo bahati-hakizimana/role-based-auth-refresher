@@ -4,8 +4,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Posts\PostController;
 
 
-Route::middleware(middleware: ['auth'])->group(function(){
-    Route::post('post/strore', [PostController::class, 'store']);
-
+Route::middleware(['auth:api'])->group(function (){
+    Route::post('post/create', [PostController::class, 'store']);
+    Route::post('/post/{post}', [PostController::class,'update']);
 });
+
 

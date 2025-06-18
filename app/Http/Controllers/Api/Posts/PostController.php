@@ -22,9 +22,9 @@ class PostController extends Controller
             return response()->json([
                 "status" => "success",
                 "mess" => "Post created successfully",
-                "post" => $post
+                "data" => $post
             ]);
-        }catch(\Throwable){
+        }catch(\Throwable $th){
 
             return response()->json([
                 "status" => "failed",
@@ -33,6 +33,28 @@ class PostController extends Controller
 
         }
 
+
+    }
+
+    public function update(PostRequest $request, Post $post){
+
+
+        try{
+            $validatedData = $request->validated();
+            $updatedpost = $this->post->updatePost($post, $validatedData);
+            return response()->json([
+                "status" => "success",
+                "message" => "post updated successfully",
+                "data" => $updatedpost
+            ]);
+
+        }catch(\Throwable $th){
+            return response()->json([
+                "status" => "failed",
+                "message" => "Failed to update post, please try again",
+                "error" => $th->getMessage()
+            ]);
+        }
 
     }
 }
